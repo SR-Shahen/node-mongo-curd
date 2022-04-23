@@ -33,9 +33,16 @@ async function run() {
             const cursor = userCollection.find(query);
             const users = await cursor.toArray();
             res.send(users);
-        })
+        });
 
+        app.get('/user/:id', async (req, res) => {
+            const id = req.params.id;
 
+            console.log(id);
+            const query = { _id: objectId(id) };
+            const result = await userCollection.findOne(query);
+            res.send(result)
+        });
 
         // Post user: create a new user
 
@@ -45,6 +52,23 @@ async function run() {
             const result = await userCollection.insertOne(newUser);
             res.send(result)
         });
+
+        // Update user
+        app.put('/user/:id', async (req, res) => {
+            const id = req.params.id;
+            const updatedUser = req.body;
+            const filter = { _id: objectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    name: updatedUser.name,
+                    email: updatedUser.email
+                }
+            }
+            const result = await userCollection.updateOne(filter, updateDoc, options)
+            res.send(result)
+        })
+
 
         // Delete user
         app.delete('/user/:id', async (req, res) => {
